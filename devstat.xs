@@ -31,10 +31,11 @@ YourType*
 your_type_new(void)
 {
 	kvm_t	*kd = NULL;
-	YourType* p = malloc(sizeof(YourType));
+	YourType* p = calloc(1, sizeof(YourType));
 	p->num = devstat_getnumdevs(kd);
-	p->info = malloc(sizeof(struct statinfo) * p->num);
+	p->info = calloc(p->num, sizeof(struct statinfo));
 	devstat_getdevs(kd, p->info);
+	return p;
 }
 
 void
