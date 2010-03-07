@@ -14,6 +14,7 @@ makemaker_args(
             cover_db
         },
     },
+    LIBS => '-ldevstat',
 );
 
 tests 't/*.t';
