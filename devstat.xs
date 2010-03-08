@@ -34,8 +34,9 @@ your_type_new(void)
 	kvm_t	*kd = NULL;
 	if (devstat_checkversion(kd) == -1) return NULL;
 	YourType* p = calloc(1, sizeof(YourType));
+	p->kd = kd;
 	p->stats.dinfo = &p->dinfo;
-	if (devstat_getdevs(kd, &p->stats) == -1) return NULL;
+	if (devstat_getdevs(p->kd, &p->stats) == -1) return NULL;
 	return p;
 }
 
@@ -49,6 +50,8 @@ your_type_free(YourType *self)
 
 #define HVpv(rh, key, pv)	hv_store(rh, key, strlen(key), newSVpv(pv, 0), 0)
 #define HViv(rh, key, iv)	hv_store(rh, key, strlen(key), newSViv(iv), 0)
+
+#include "compstat.h"
 
 MODULE = BSD::devstat  PACKAGE = BSD::devstat
 
@@ -103,13 +106,19 @@ OUTPUT:
     RETVAL
 
 HV*
-compute_statistics(YourType* self, int sec)
+compute_statistics(YourType* self, int index, int sec)
 CODE:
     struct statinfo s1;
     struct statinfo s2;
-    /* devstat_getdevs(self->kd */
+    struct devinfo d1;
+    struct devinfo d2;
+    s1.dinfo = &d1;
+    s2.dinfo = &d2;
+    devstat_getdevs(self->kd, &s1);
     sleep(sec);
+    devstat_getdevs(self->kd, &s2);
     HV *rh = (HV*)sv_2mortal((SV*)newHV());
+    compstat(&d2.devices[index], &d1.devices[index], s2.snap_time - s1.snap_time, rh);
     RETVAL = rh;
 OUTPUT:
     RETVAL
