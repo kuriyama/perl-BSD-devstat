@@ -109,12 +109,13 @@ OUTPUT:
     RETVAL
 
 HV*
-compute_statistics(YourType* self, int index, int sec)
+compute_statistics(YourType* self, int index, float sec)
 CODE:
     struct statinfo s1;
     struct statinfo s2;
     struct devinfo d1;
     struct devinfo d2;
+    struct timespec t;
     memset(&s1, 0, sizeof(struct statinfo));
     memset(&s2, 0, sizeof(struct statinfo));
     memset(&d1, 0, sizeof(struct devinfo));
@@ -130,7 +131,9 @@ CODE:
     if (devstat_getdevs(self->kd, &s1) == -1) {
         croak("First devstat_getdevs() returns -1: %s", devstat_errbuf);
     }
-    sleep(sec);
+    t.tv_sec = (int)(sec);
+    t.tv_nsec = (long)(1000000000L * sec) % 1000000000L;
+    nanosleep(&t, NULL);
     if (devstat_getdevs(self->kd, &s2) == -1) {
         croak("Second devstat_getdevs() returns -1: %s", devstat_errbuf);
     }
