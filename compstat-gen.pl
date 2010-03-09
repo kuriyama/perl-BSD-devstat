@@ -13,8 +13,8 @@ print <<END;
 int
 compstat(struct devstat *current, struct devstat *previous, long double etime, HV* rh)
 {
-    u_int64_t u[20];
-    long double d[20];
+    u_int64_t u[14];
+    long double d[23];
     devstat_compute_statistics(current, previous, etime,
 END
 

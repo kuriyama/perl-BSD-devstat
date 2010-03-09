@@ -31,7 +31,7 @@ typedef struct YourType	YourType;
 YourType*
 your_type_new(void)
 {
-	kvm_t	*kd = NULL;
+	kvm_t *kd = NULL;	/* may support non-NULL value later. */
 	if (devstat_checkversion(kd) == -1) return NULL;
 	YourType* p = calloc(1, sizeof(YourType));
 	p->kd = kd;
@@ -48,10 +48,10 @@ your_type_free(YourType *self)
 	}
 }
 
+#include "compstat.h"
+
 #define HVpv(rh, key, pv)	hv_store(rh, key, strlen(key), newSVpv(pv, 0), 0)
 #define HViv(rh, key, iv)	hv_store(rh, key, strlen(key), newSViv(iv), 0)
-
-#include "compstat.h"
 
 MODULE = BSD::devstat  PACKAGE = BSD::devstat
 
@@ -73,6 +73,9 @@ OUTPUT:
 HV*
 devices(YourType* self, int index)
 CODE:
+    if (index < 0 || index >= self->stats.dinfo->numdevs) {
+        croak("Invalid index range");
+    }
     HV *rh = (HV*)sv_2mortal((SV*)newHV());
     struct devstat dev = self->stats.dinfo->devices[index];
     HVpv(rh, "device_name",		dev.device_name);
@@ -112,11 +115,25 @@ CODE:
     struct statinfo s2;
     struct devinfo d1;
     struct devinfo d2;
+    memset(&s1, 0, sizeof(struct statinfo));
+    memset(&s2, 0, sizeof(struct statinfo));
+    memset(&d1, 0, sizeof(struct devinfo));
+    memset(&d2, 0, sizeof(struct devinfo));
     s1.dinfo = &d1;
     s2.dinfo = &d2;
-    devstat_getdevs(self->kd, &s1);
+    if (index < 0 || index >= self->stats.dinfo->numdevs) {
+        croak("Invalid index range");
+    }
+    if (sec < 0) {
+        croak("Cannot accept negative second");
+    }
+    if (devstat_getdevs(self->kd, &s1) == -1) {
+        croak("First devstat_getdevs() returns -1: %s", devstat_errbuf);
+    }
     sleep(sec);
-    devstat_getdevs(self->kd, &s2);
+    if (devstat_getdevs(self->kd, &s2) == -1) {
+        croak("Second devstat_getdevs() returns -1: %s", devstat_errbuf);
+    }
     HV *rh = (HV*)sv_2mortal((SV*)newHV());
     compstat(&d2.devices[index], &d1.devices[index], s2.snap_time - s1.snap_time, rh);
     RETVAL = rh;
