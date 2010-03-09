@@ -10,12 +10,12 @@ extern "C" {
 #endif
 #include <devstat.h>
 
-struct YourType {
+struct bsd_devstat {
 	kvm_t *kd;
 	struct statinfo	stats;
 	struct devinfo  dinfo;
 };
-typedef struct YourType	YourType;
+typedef struct bsd_devstat	bsd_devstat;
 
 
 #define XS_STATE(type, x) \
@@ -28,12 +28,12 @@ typedef struct YourType	YourType;
         sv_setref_pv(sv, class, (void *) obj); \
     }
 
-YourType*
-your_type_new(void)
+bsd_devstat*
+bsd_devstat_new(void)
 {
 	kvm_t *kd = NULL;	/* may support non-NULL value later. */
 	if (devstat_checkversion(kd) == -1) return NULL;
-	YourType* p = calloc(1, sizeof(YourType));
+	bsd_devstat* p = calloc(1, sizeof(bsd_devstat));
 	p->kd = kd;
 	p->stats.dinfo = &p->dinfo;
 	if (devstat_getdevs(p->kd, &p->stats) == -1) return NULL;
@@ -41,7 +41,7 @@ your_type_new(void)
 }
 
 void
-your_type_free(YourType *self)
+bsd_devstat_free(bsd_devstat *self)
 {
 	if (self) {
 		free(self);
@@ -55,23 +55,23 @@ your_type_free(YourType *self)
 
 MODULE = BSD::devstat  PACKAGE = BSD::devstat
 
-YourType*
+bsd_devstat*
 BSD::devstat::new()
 CODE:
-    YourType* self = your_type_new();
+    bsd_devstat* self = bsd_devstat_new();
     RETVAL = self;
 OUTPUT:
     RETVAL
 
 int
-numdevs(YourType* self)
+numdevs(bsd_devstat* self)
 CODE:
     RETVAL = (self->stats.dinfo)->numdevs;
 OUTPUT:
     RETVAL
 
 HV*
-devices(YourType* self, int index)
+devices(bsd_devstat* self, int index)
 CODE:
     if (index < 0 || index >= self->stats.dinfo->numdevs) {
         croak("Invalid index range");
@@ -109,7 +109,7 @@ OUTPUT:
     RETVAL
 
 HV*
-compute_statistics(YourType* self, int index, float sec)
+compute_statistics(bsd_devstat* self, int index, float sec)
 CODE:
     struct statinfo s1;
     struct statinfo s2;
@@ -144,6 +144,6 @@ OUTPUT:
     RETVAL
 
 void
-DESTROY(YourType* self)
+DESTROY(bsd_devstat* self)
 CODE:
-    your_type_free(self);
+    bsd_devstat_free(self);
