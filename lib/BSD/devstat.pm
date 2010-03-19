@@ -45,22 +45,24 @@ BSD::devstat is interface to devstat(3) API.  You can grab device
 statistics information which is provided by devstat(9) kernel interface
 via devstat(3) userland interface.
 
-=head2 new()
+=over
+
+=item new()
 
 Retrieve device statistics and store it as BSD::devstat object.
 
-=head2 numdevs()
+=item numdevs()
 
 Return the number of devices which devstat(3) API provided.
 
-=head2 devices($device_index)
+=item devices($device_index)
 
 $device_index is index for device, which can be from 0 to
 ($self->numdevs() - 1).
 Returns hash reference.  This contains various values described in
 devstat(9) manpage.  This method will croak if error occured.
 
-=head2 compute_statistics($device_index, $elapse_time)
+=item compute_statistics($device_index, $elapse_time)
 
 $device_index is index for device, which can be from 0 to
 ($self->numdevs() - 1).  $elapse_time is second (can be float number)
@@ -70,6 +72,8 @@ Returns hash reference.  This contains various values described at
 devstat_compute_statistics() function in devstat(3) manpage.
 This method will croak if error occured.
 
+=back
+
 =head1 AUTHOR
 
 Jun Kuriyama E<lt>kuriyama@FreeBSD.orgE<gt>
@@ -77,6 +81,10 @@ Jun Kuriyama E<lt>kuriyama@FreeBSD.orgE<gt>
 =head1 SEE ALSO
 
 devstat(3), devstat(9).
+
+=head1 BUGS
+
+Currently supports only FreeBSD.
 
 =head1 LICENSE
 
