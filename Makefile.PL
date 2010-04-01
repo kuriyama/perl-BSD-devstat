@@ -4,7 +4,7 @@ all_from 'lib/BSD/devstat.pm';
 
 can_cc or die "This module requires a C compiler";
 
-system("./compstat-gen.pl > compstat.h");
+system("./compstat-gen.PL > compstat.h");
 
 makemaker_args(
     OBJECT => '$(O_FILES)',

@@ -1,5 +1,6 @@
 .gitignore
 Changes
+compstat-gen.PL
 compstat.txt
 devstat.xs
 inc/Module/Install.pm
